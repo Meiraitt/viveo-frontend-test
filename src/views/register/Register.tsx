@@ -9,7 +9,9 @@ export const Register = () => {
   const {
     form,
     errors,
+    cepLookupError,
     successMessage,
+    isCepLoading,
     isSubmitDisabled,
     handleChange,
     handleBlur,
@@ -42,8 +44,7 @@ export const Register = () => {
             </p>
             <h2 className="text-2xl font-semibold text-white">Criar conta</h2>
             <p className="text-sm leading-6 text-muted">
-              Preencha os dados abaixo. Nesta etapa, o endereco ainda e
-              informado manualmente.
+              Preencha seus dados e informe o CEP para completar o endereco.
             </p>
           </div>
 
@@ -52,7 +53,7 @@ export const Register = () => {
             noValidate
             onSubmit={handleSubmit}
           >
-            <fieldset className="grid gap-6 border-0 p-0 sm:grid-cols-2">
+            <fieldset className="grid gap-x-6 gap-y-8 border-0 p-0 sm:grid-cols-2">
               <legend className="sr-only">Dados pessoais</legend>
 
               <Input
@@ -124,7 +125,7 @@ export const Register = () => {
               />
             </fieldset>
 
-            <fieldset className="grid gap-6 border-0 p-0 sm:grid-cols-6">
+            <fieldset className="grid gap-x-6 gap-y-9 border-0 p-0 sm:grid-cols-6">
               <legend className="sr-only">Endereco</legend>
 
               <Input
@@ -134,7 +135,8 @@ export const Register = () => {
                 autoComplete="postal-code"
                 placeholder="00000-000"
                 value={form.cep}
-                error={errors.cep}
+                error={errors.cep || cepLookupError}
+                helperText={isCepLoading ? "Consultando CEP..." : undefined}
                 className="sm:col-span-2"
                 onChange={(event) => handleChange("cep", event.target.value)}
                 onBlur={() => handleBlur("cep")}

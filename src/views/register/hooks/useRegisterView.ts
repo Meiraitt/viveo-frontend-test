@@ -1,5 +1,6 @@
 "use client";
 
+import { useCepLookup } from "@/hooks/useCepLookup";
 import { useMemo, useState } from "react";
 import type { SubmitEventHandler } from "react";
 import {
@@ -15,13 +16,60 @@ import type {
 } from "../utils/registerForm";
 
 export const useRegisterView = () => {
+  const { cepLookupError, isCepLoading, lookupCep, clearCepLookup } =
+    useCepLookup();
   const [form, setForm] = useState(initialRegisterForm);
   const [errors, setErrors] = useState<RegisterErrors>({});
   const [touchedFields, setTouchedFields] = useState<RegisterTouchedFields>({});
+  const [lastSearchedCep, setLastSearchedCep] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const formValidationErrors = useMemo(() => validateRegisterForm(form), [form]);
+  const formValidationErrors = useMemo(
+    () => validateRegisterForm(form),
+    [form],
+  );
   const isSubmitDisabled = Object.keys(formValidationErrors).length > 0;
+
+  const handleCepLookup = async (cep: string, currentForm: RegisterForm) => {
+    const normalizedCep = cep.replace(/\D/g, "");
+    setLastSearchedCep(normalizedCep);
+
+    const address = await lookupCep(normalizedCep);
+
+    if (!address) {
+      return;
+    }
+
+    const updatedForm = {
+      ...currentForm,
+      street: address.street,
+      neighborhood: address.neighborhood,
+      city: address.city,
+      state: address.state,
+    };
+
+    setForm(updatedForm);
+
+    setErrors((currentErrors) => ({
+      ...currentErrors,
+      street: validateVisibleRegisterField(
+        "street",
+        updatedForm.street,
+        updatedForm,
+      ),
+      neighborhood: validateVisibleRegisterField(
+        "neighborhood",
+        updatedForm.neighborhood,
+        updatedForm,
+      ),
+      city: validateVisibleRegisterField("city", updatedForm.city, updatedForm),
+      state: validateVisibleRegisterField(
+        "state",
+        updatedForm.state,
+        updatedForm,
+      ),
+    }));
+  };
 
   const handleChange = (field: keyof RegisterForm, value: string) => {
     const formattedValue = formatRegisterFieldValue(field, value);
@@ -29,6 +77,11 @@ export const useRegisterView = () => {
       ...form,
       [field]: formattedValue,
     };
+    const normalizedCep = updatedForm.cep.replace(/\D/g, "");
+
+    if (field === "cep") {
+      clearCepLookup();
+    }
 
     setForm(updatedForm);
 
@@ -58,6 +111,17 @@ export const useRegisterView = () => {
       }));
     }
 
+    const cepError = validateVisibleRegisterField("cep", updatedForm.cep, updatedForm);
+
+    if (
+      field === "cep" &&
+      normalizedCep.length === 8 &&
+      !cepError &&
+      normalizedCep !== lastSearchedCep
+    ) {
+      void handleCepLookup(updatedForm.cep, updatedForm);
+    }
+
     setSuccessMessage("");
   };
 
@@ -67,9 +131,11 @@ export const useRegisterView = () => {
       [field]: true,
     }));
 
+    const fieldError = validateVisibleRegisterField(field, form[field], form);
+
     setErrors((currentErrors) => ({
       ...currentErrors,
-      [field]: validateVisibleRegisterField(field, form[field], form),
+      [field]: fieldError,
     }));
   };
 
@@ -103,7 +169,9 @@ export const useRegisterView = () => {
   return {
     form,
     errors,
+    cepLookupError,
     successMessage,
+    isCepLoading,
     isSubmitDisabled,
     handleChange,
     handleBlur,

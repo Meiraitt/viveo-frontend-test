@@ -3,6 +3,7 @@ import type { InputHTMLAttributes, ReactNode } from "react";
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   label: string;
   error?: string;
+  helperText?: string;
   startIcon?: ReactNode;
 };
 
@@ -10,13 +11,15 @@ export function Input({
   id,
   label,
   error,
+  helperText,
   startIcon,
   className = "",
   ...props
 }: InputProps) {
   const inputId = id ?? props.name;
-  const errorId = error && inputId ? `${inputId}-error` : undefined;
-  const wrapperClassName = `relative flex flex-col gap-2 pb-6${
+  const descriptionId =
+    (error || helperText) && inputId ? `${inputId}-description` : undefined;
+  const wrapperClassName = `relative flex flex-col gap-2 pb-8${
     className ? ` ${className}` : ""
   }`;
   const inputClassName = `h-12 w-full rounded-md border bg-background/70 px-3 text-base text-foreground outline-none transition placeholder:text-muted/70 focus:border-accent focus:ring-2 focus:ring-accent/25 disabled:cursor-not-allowed disabled:opacity-60${
@@ -46,17 +49,24 @@ export function Input({
         <input
           id={inputId}
           aria-invalid={Boolean(error)}
-          aria-describedby={errorId}
+          aria-describedby={descriptionId}
           className={inputClassName}
           {...props}
         />
 
         {error ? (
           <p
-            id={errorId}
+            id={descriptionId}
             className="absolute left-0 top-full pt-1 text-sm font-medium leading-4 text-danger"
           >
             {error}
+          </p>
+        ) : helperText ? (
+          <p
+            id={descriptionId}
+            className="absolute left-0 top-full pt-1 text-sm font-medium leading-4 text-muted"
+          >
+            {helperText}
           </p>
         ) : null}
       </div>
