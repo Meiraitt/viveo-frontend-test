@@ -2,7 +2,7 @@
 
 import { Button, ButtonLink, Card, Input } from "@/components";
 import Image from "next/image";
-import cyberpunkLoginBg from "@/assets/cyberpunk-login-bg.png";
+import cyberpunkLoginBg from "@/assets/cyberpunk-login-bg.webp";
 import { useLoginView } from "./hooks/useLoginView";
 
 export const Login = () => {

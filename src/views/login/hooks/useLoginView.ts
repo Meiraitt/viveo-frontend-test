@@ -2,70 +2,19 @@
 
 import { useMemo, useState } from "react";
 import type { SubmitEventHandler } from "react";
-
-type LoginForm = {
-  email: string;
-  password: string;
-};
-
-type LoginErrors = Partial<Record<keyof LoginForm, string>>;
-type LoginTouchedFields = Partial<Record<keyof LoginForm, boolean>>;
-
-const initialForm: LoginForm = {
-  email: "",
-  password: "",
-};
-
-const validateLoginField = (field: keyof LoginForm, value: string) => {
-  if (field === "email") {
-    if (!value.trim()) {
-      return "Informe seu e-mail.";
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-      return "Informe um e-mail valido.";
-    }
-
-    return undefined;
-  }
-
-  if (!value) {
-    return "Informe sua senha.";
-  }
-
-  if (value.length < 6) {
-    return "A senha deve ter pelo menos 6 caracteres.";
-  }
-
-  return undefined;
-};
-
-const validateVisibleLoginField = (field: keyof LoginForm, value: string) => {
-  if (!value.trim()) {
-    return undefined;
-  }
-
-  return validateLoginField(field, value);
-};
-
-const validateLoginForm = (form: LoginForm) => {
-  const errors: LoginErrors = {};
-  const emailError = validateLoginField("email", form.email);
-  const passwordError = validateLoginField("password", form.password);
-
-  if (emailError) {
-    errors.email = emailError;
-  }
-
-  if (passwordError) {
-    errors.password = passwordError;
-  }
-
-  return errors;
-};
+import {
+  initialLoginForm,
+  validateLoginForm,
+  validateVisibleLoginField,
+} from "../utils/loginForm";
+import type {
+  LoginErrors,
+  LoginForm,
+  LoginTouchedFields,
+} from "../utils/loginForm";
 
 export const useLoginView = () => {
-  const [form, setForm] = useState(initialForm);
+  const [form, setForm] = useState(initialLoginForm);
   const [errors, setErrors] = useState<LoginErrors>({});
   const [touchedFields, setTouchedFields] = useState<LoginTouchedFields>({});
   const [successMessage, setSuccessMessage] = useState("");
