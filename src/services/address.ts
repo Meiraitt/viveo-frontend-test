@@ -18,7 +18,7 @@ type BrasilApiErrorResponse = {
   }>;
 };
 
-const BRASIL_API_CEP_URL = "https://brasilapi.com.br/api/cep/v2";
+const BRASIL_API_BASE_URL = process.env.NEXT_PUBLIC_BRASIL_API_BASE_URL;
 
 const onlyNumbers = (value: string) => value.replace(/\D/g, "");
 
@@ -51,13 +51,17 @@ const getBrasilApiErrorMessage = (data: BrasilApiErrorResponse) => {
 };
 
 export const fetchAddressByCep = async (cep: string): Promise<Address> => {
+  if (!BRASIL_API_BASE_URL) {
+    throw new Error("BrasilAPI base URL nao configurada.");
+  }
+
   const normalizedCep = onlyNumbers(cep);
 
   if (normalizedCep.length !== 8) {
     throw new Error("Informe um CEP com 8 digitos.");
   }
 
-  const response = await fetch(`${BRASIL_API_CEP_URL}/${normalizedCep}`);
+  const response = await fetch(`${BRASIL_API_BASE_URL}/${normalizedCep}`);
   const data = await response.json();
 
   if (!response.ok) {
